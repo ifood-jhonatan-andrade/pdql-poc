@@ -3,5 +3,5 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "pdql": "PDQL c > 9 and a = dsda"
+  "pdql": "PDQL c in (d, s, e, a)"
 }

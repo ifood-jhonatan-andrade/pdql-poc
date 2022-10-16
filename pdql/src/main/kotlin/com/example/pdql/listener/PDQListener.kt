@@ -1,6 +1,8 @@
 package com.example.pdql.listener
 
 import PDQLBaseListener
+import com.example.pdql.adapter.AntlrAdapter
+import com.example.pdql.adapter.ESAdapter
 import com.example.pdql.domain.ESQuery
 import com.example.pdql.domain.PDQLNode
 import com.example.pdql.domain.PDQLType
@@ -30,22 +32,16 @@ internal class PDQListener : PDQLBaseListener() {
         val operation = ctx?.children?.get(1)?.text
 
         if (ctx?.children?.get(0)?.text == "(") {
-            return PDQLNode.toSubQuery(ctx)
+            return AntlrAdapter.toSubQuery(ctx)
         }
 
-        if (operation == "=" || operation == "MATCH" || operation == "like") {
-            return PDQLNode.toEqual(ctx)
+        return when (operation) {
+            "=", "MATCH", "like" -> AntlrAdapter.toEqual(ctx)
+            ">" -> AntlrAdapter.toGT(ctx)
+            "in" -> AntlrAdapter.toIn(ctx)
+            "and", "or" -> AntlrAdapter.toConjunction(ctx)
+            else -> throw Error("Node type invalid")
         }
-
-        if (operation == ">") {
-            return PDQLNode.toGT(ctx)
-        }
-
-        if (operation == "and" || operation == "or") {
-            return PDQLNode.toConjunction(ctx)
-        }
-
-        throw Error("Node type invalid")
     }
 
     fun getESQuery(): ESQuery = walkTree(rootPDQLNode!!)
@@ -64,6 +60,7 @@ internal class PDQListener : PDQLBaseListener() {
         operation: String,
         values: List<ESQuery>
     ): ESQuery {
+        // TODO: IMPLEMENT TO ADAPTER
         if (operation == "or") {
             val should = mutableListOf<ESQuery>()
 
@@ -88,22 +85,11 @@ internal class PDQListener : PDQLBaseListener() {
 
     private fun createESQuery(current: PDQLNode): ESQuery {
         // TODO: not supports multi index
-        val field = "doc.ItemMetadata.${current.column}"
-        val type = current.type
-        val value = current.value
-
-        // TODO: only supports equality (=)(>) operation
-        if (type == PDQLType.EQUAL) {
-            val map = mutableMapOf<String?, Any?>()
-            map[field] = value
-            return ESQuery(match = map)
+        // TODO: IMPLEMENT OPERATION "IN"
+        return when (current.type) {
+            PDQLType.EQUAL -> ESAdapter.toMatch(current)
+            PDQLType.GT -> ESAdapter.toGT(current)
+            else -> throw Error("Operation invalid")
         }
-        if (type == PDQLType.GT) {
-            val map = mutableMapOf<String?, ESQuery.ESQueryRange?>()
-            map[field] = ESQuery.ESQueryRange(gt = (value as String?)?.toInt())
-            return ESQuery(range = map)
-        }
-
-        throw Error("Operation invalid")
     }
 }
