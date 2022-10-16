@@ -1,0 +1,7 @@
+POST http://localhost:8080/item
+Content-Type: application/json
+Accept: application/json
+
+{
+  "pdql": "PDQL c > 9 and a = dsda"
+}
