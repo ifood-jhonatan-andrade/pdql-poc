@@ -19,4 +19,23 @@ object ESAdapter {
         map[field] = ESQuery.ESQueryRange(gt = value as Int?)
         return ESQuery(range = map)
     }
+
+    fun toIn(node: PDQLNode): ESQuery {
+        val matches = (node.value as Iterable<*>).map {
+            toMatch(node.copy(value = it))
+        }
+
+        val esQuery = ESQuery(
+            should = matches,
+            minimum_should_match = 1
+        )
+
+        return ESQuery(bool = esQuery)
+    }
+
+    fun toIS(node: PDQLNode): ESQuery = toMatch(
+        node.copy(
+            value = (node.value as String).toBoolean()
+        )
+    )
 }

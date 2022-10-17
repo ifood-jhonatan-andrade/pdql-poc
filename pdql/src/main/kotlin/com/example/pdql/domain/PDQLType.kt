@@ -5,5 +5,6 @@ enum class PDQLType {
     IN,
     SUB_QUERY,
     GT,
-    CONJUNCTION
+    CONJUNCTION,
+    IS
 }

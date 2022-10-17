@@ -19,7 +19,7 @@ internal class PDQListener : PDQLBaseListener() {
             mapTreeClauses[element.id] = mutableListOf()
         } else if (ctx?.stop != ctx?.start) {
             val element = getContextNode(ctx)
-            if (element.operation == "and" || element.operation == "or") {
+            if (element.type == PDQLType.CONJUNCTION) {
                 mapTreeClauses[element.parent]?.add(element)
                 mapTreeClauses[element.id] = mutableListOf()
             } else {
@@ -40,6 +40,7 @@ internal class PDQListener : PDQLBaseListener() {
             ">" -> AntlrAdapter.toGT(ctx)
             "in" -> AntlrAdapter.toIn(ctx)
             "and", "or" -> AntlrAdapter.toConjunction(ctx)
+            "is" -> AntlrAdapter.toIS(ctx)
             else -> throw Error("Node type invalid")
         }
     }
@@ -85,10 +86,11 @@ internal class PDQListener : PDQLBaseListener() {
 
     private fun createESQuery(current: PDQLNode): ESQuery {
         // TODO: not supports multi index
-        // TODO: IMPLEMENT OPERATION "IN"
         return when (current.type) {
             PDQLType.EQUAL -> ESAdapter.toMatch(current)
             PDQLType.GT -> ESAdapter.toGT(current)
+            PDQLType.IN -> ESAdapter.toIn(current)
+            PDQLType.IS -> ESAdapter.toIS(current)
             else -> throw Error("Operation invalid")
         }
     }

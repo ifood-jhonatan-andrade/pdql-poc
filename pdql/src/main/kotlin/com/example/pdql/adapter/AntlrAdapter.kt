@@ -5,6 +5,23 @@ import com.example.pdql.domain.PDQLType
 import org.antlr.v4.runtime.tree.TerminalNodeImpl
 
 object AntlrAdapter {
+
+    private fun getNode(ctx: PDQLParser.Expr_pdqlContext?): PDQLNode {
+        val id = ctx?.payload?.text
+        val operation = ctx?.children?.get(1)?.text
+        val column = ctx?.children?.get(0)?.text
+        val value = ctx?.children?.get(2)?.text
+        val parent = ctx?.parent?.text
+
+        return PDQLNode(
+            id,
+            parent,
+            operation,
+            column,
+            value,
+            null
+        )
+    }
     fun toIn(ctx: PDQLParser.Expr_pdqlContext?): PDQLNode {
         val id = ctx?.payload?.text
         val operation = ctx?.children?.get(1)?.text
@@ -20,25 +37,16 @@ object AntlrAdapter {
             operation,
             column,
             value,
-            PDQLType.EQUAL
+            PDQLType.IN
         )
     }
 
     fun toEqual(ctx: PDQLParser.Expr_pdqlContext?): PDQLNode {
-        val id = ctx?.payload?.text
-        val operation = ctx?.children?.get(1)?.text
-        val column = ctx?.children?.get(0)?.text
-        val value = ctx?.children?.get(2)?.text
-        val parent = ctx?.parent?.text
+        return getNode(ctx).copy(type = PDQLType.EQUAL)
+    }
 
-        return PDQLNode(
-            id,
-            parent,
-            operation,
-            column,
-            value,
-            PDQLType.EQUAL
-        )
+    fun toIS(ctx: PDQLParser.Expr_pdqlContext?): PDQLNode {
+        return getNode(ctx).copy(type = PDQLType.IS)
     }
 
     fun toSubQuery(ctx: PDQLParser.Expr_pdqlContext?): PDQLNode {

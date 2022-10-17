@@ -76,4 +76,40 @@ internal class PDQListenerTest {
 
         Assertions.assertEquals(expect, result)
     }
+
+    @Test
+    fun `ensure the IN for boolean operations`() {
+        val pdql = "PDQL a in (teste, teste1)"
+
+        val result = sut.transpiler(pdql)
+
+        val expect = ESQuery(
+            bool = ESQuery(
+                should = mutableListOf(
+                    ESQuery(
+                        match = mutableMapOf(Pair("doc.ItemMetadata.a", "teste"))
+                    ),
+                    ESQuery(
+                        match = mutableMapOf(Pair("doc.ItemMetadata.a", "teste1"))
+                    )
+                ),
+                minimum_should_match = 1
+            )
+        )
+
+        Assertions.assertEquals(expect, result)
+    }
+
+    @Test
+    fun `ensure the IS for boolean operations`() {
+        val pdql = "PDQL a is true"
+
+        val result = sut.transpiler(pdql)
+
+        val expect = ESQuery(
+            match = mutableMapOf(Pair("doc.ItemMetadata.a", true))
+        )
+
+        Assertions.assertEquals(expect, result)
+    }
 }

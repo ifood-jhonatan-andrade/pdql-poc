@@ -3,5 +3,5 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "pdql": "PDQL c in (d, s, e, a)"
+  "pdql": "PDQL isPortion = false or (isPortion = true and itemName = arroz)"
 }

@@ -5,5 +5,5 @@ data class PDQLNode(
     val operation: String?,
     val column: String?,
     val value: Any?,
-    val type: PDQLType
+    val type: PDQLType?
 )
