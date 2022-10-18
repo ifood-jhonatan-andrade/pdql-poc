@@ -1,14 +1,17 @@
 package com.example.pdql.listener
 
 import PDQLBaseListener
-import com.example.pdql.adapter.AntlrAdapter
-import com.example.pdql.adapter.ESAdapter
 import com.example.pdql.domain.ESQuery
 import com.example.pdql.domain.PDQLNode
 import com.example.pdql.domain.PDQLType
+import com.example.pdql.port.IAntlrAdapter
+import com.example.pdql.port.IElasticSearchAdapter
 import java.lang.Error
 
-internal class PDQListener : PDQLBaseListener() {
+class PDQListener(
+    private val antlrAdapter: IAntlrAdapter,
+    private val elasticSearchAdapter: IElasticSearchAdapter
+) : PDQLBaseListener() {
     private var rootPDQLNode: PDQLNode? = null
     private val mapTreeClauses = mutableMapOf<String?, MutableList<PDQLNode>>()
     override fun enterExpr_pdql(ctx: PDQLParser.Expr_pdqlContext?) {
@@ -32,15 +35,15 @@ internal class PDQListener : PDQLBaseListener() {
         val operation = ctx?.children?.get(1)?.text
 
         if (ctx?.children?.get(0)?.text == "(") {
-            return AntlrAdapter.toSubQuery(ctx)
+            return antlrAdapter.toSubQuery(ctx)
         }
 
         return when (operation) {
-            "=", "MATCH", "like" -> AntlrAdapter.toEqual(ctx)
-            ">" -> AntlrAdapter.toGT(ctx)
-            "in" -> AntlrAdapter.toIn(ctx)
-            "and", "or" -> AntlrAdapter.toConjunction(ctx)
-            "is" -> AntlrAdapter.toIS(ctx)
+            "=", "MATCH", "like" -> antlrAdapter.toEqual(ctx)
+            ">" -> antlrAdapter.toGreaterThan(ctx)
+            "in" -> antlrAdapter.toIn(ctx)
+            "and", "or" -> antlrAdapter.toConjunction(ctx)
+            "is" -> antlrAdapter.toIs(ctx)
             else -> throw Error("Node type invalid")
         }
     }
@@ -87,10 +90,10 @@ internal class PDQListener : PDQLBaseListener() {
     private fun createESQuery(current: PDQLNode): ESQuery {
         // TODO: not supports multi index
         return when (current.type) {
-            PDQLType.EQUAL -> ESAdapter.toMatch(current)
-            PDQLType.GT -> ESAdapter.toGT(current)
-            PDQLType.IN -> ESAdapter.toIn(current)
-            PDQLType.IS -> ESAdapter.toIS(current)
+            PDQLType.EQUAL -> elasticSearchAdapter.toMatch(current)
+            PDQLType.GT -> elasticSearchAdapter.toGreaterThan(current)
+            PDQLType.IN -> elasticSearchAdapter.toIn(current)
+            PDQLType.IS -> elasticSearchAdapter.toIs(current)
             else -> throw Error("Operation invalid")
         }
     }

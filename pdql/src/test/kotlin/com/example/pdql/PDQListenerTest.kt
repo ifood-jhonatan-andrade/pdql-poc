@@ -1,8 +1,8 @@
 package com.example.pdql
 
-import com.example.pdql.component.PDQLComponent
 import com.example.pdql.domain.ESQuery
 import com.example.pdql.port.IPDQLComponent
+import com.example.pdql.presentation.component.PDQLComponent
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 

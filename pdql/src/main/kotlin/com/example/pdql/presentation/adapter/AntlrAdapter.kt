@@ -1,10 +1,11 @@
-package com.example.pdql.adapter
+package com.example.pdql.presentation.adapter
 
 import com.example.pdql.domain.PDQLNode
 import com.example.pdql.domain.PDQLType
+import com.example.pdql.port.IAntlrAdapter
 import org.antlr.v4.runtime.tree.TerminalNodeImpl
 
-object AntlrAdapter {
+class AntlrAdapter : IAntlrAdapter {
 
     private fun getNode(ctx: PDQLParser.Expr_pdqlContext?): PDQLNode {
         val id = ctx?.payload?.text
@@ -22,7 +23,7 @@ object AntlrAdapter {
             null
         )
     }
-    fun toIn(ctx: PDQLParser.Expr_pdqlContext?): PDQLNode {
+    override fun toIn(ctx: PDQLParser.Expr_pdqlContext?): PDQLNode {
         val id = ctx?.payload?.text
         val operation = ctx?.children?.get(1)?.text
         val column = ctx?.children?.get(0)?.text
@@ -41,15 +42,15 @@ object AntlrAdapter {
         )
     }
 
-    fun toEqual(ctx: PDQLParser.Expr_pdqlContext?): PDQLNode {
+    override fun toEqual(ctx: PDQLParser.Expr_pdqlContext?): PDQLNode {
         return getNode(ctx).copy(type = PDQLType.EQUAL)
     }
 
-    fun toIS(ctx: PDQLParser.Expr_pdqlContext?): PDQLNode {
+    override fun toIs(ctx: PDQLParser.Expr_pdqlContext?): PDQLNode {
         return getNode(ctx).copy(type = PDQLType.IS)
     }
 
-    fun toSubQuery(ctx: PDQLParser.Expr_pdqlContext?): PDQLNode {
+    override fun toSubQuery(ctx: PDQLParser.Expr_pdqlContext?): PDQLNode {
         val operation = ctx?.children?.get(1)?.getChild(1)?.text
         val id = ctx?.children?.get(1)?.text
         val parent = ctx?.parent?.text
@@ -64,7 +65,7 @@ object AntlrAdapter {
         )
     }
 
-    fun toConjunction(ctx: PDQLParser.Expr_pdqlContext?): PDQLNode {
+    override fun toConjunction(ctx: PDQLParser.Expr_pdqlContext?): PDQLNode {
         val id = ctx?.payload?.text
         val operation = ctx?.children?.get(1)?.text
         val parent = ctx?.parent?.text
@@ -79,7 +80,7 @@ object AntlrAdapter {
         )
     }
 
-    fun toGT(ctx: PDQLParser.Expr_pdqlContext?): PDQLNode {
+    override fun toGreaterThan(ctx: PDQLParser.Expr_pdqlContext?): PDQLNode {
         val id = ctx?.payload?.text
         val operation = ctx?.children?.get(1)?.text
         val parent = ctx?.parent?.text

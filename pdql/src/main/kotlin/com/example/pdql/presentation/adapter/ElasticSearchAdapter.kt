@@ -1,10 +1,11 @@
-package com.example.pdql.adapter
+package com.example.pdql.presentation.adapter
 
 import com.example.pdql.domain.ESQuery
 import com.example.pdql.domain.PDQLNode
+import com.example.pdql.port.IElasticSearchAdapter
 
-object ESAdapter {
-    fun toMatch(node: PDQLNode): ESQuery {
+class ElasticSearchAdapter : IElasticSearchAdapter {
+    override fun toMatch(node: PDQLNode): ESQuery {
         val field = "doc.ItemMetadata.${node.column}"
         val value = node.value
         val map = mutableMapOf<String?, Any?>()
@@ -12,7 +13,7 @@ object ESAdapter {
         return ESQuery(match = map)
     }
 
-    fun toGT(node: PDQLNode): ESQuery {
+    override fun toGreaterThan(node: PDQLNode): ESQuery {
         val field = "doc.ItemMetadata.${node.column}"
         val value = node.value
         val map = mutableMapOf<String?, ESQuery.ESQueryRange?>()
@@ -20,7 +21,7 @@ object ESAdapter {
         return ESQuery(range = map)
     }
 
-    fun toIn(node: PDQLNode): ESQuery {
+    override fun toIn(node: PDQLNode): ESQuery {
         val matches = (node.value as Iterable<*>).map {
             toMatch(node.copy(value = it))
         }
@@ -33,7 +34,7 @@ object ESAdapter {
         return ESQuery(bool = esQuery)
     }
 
-    fun toIS(node: PDQLNode): ESQuery = toMatch(
+    override fun toIs(node: PDQLNode): ESQuery = toMatch(
         node.copy(
             value = (node.value as String).toBoolean()
         )
